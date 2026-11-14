@@ -1,0 +1,8 @@
+{
+  "name": "Путь самурая",
+  "short_name": "Самурай",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#121010",
+  "theme_color": "#151313"
+}
