@@ -25,6 +25,35 @@ h1{font-size:32px;letter-spacing:.01em;margin:18px 0 20px}
 .selection-note{font-size:12px;color:#d8b58d;margin:10px 0 14px;text-align:center}
 .wide{width:100%;padding:13px}
 @media(max-width:480px){.day-picker{grid-template-columns:repeat(4,1fr)}.modal{padding:10px}.sheet{padding:18px}}
+
+/* Samurai visual refinement v1.3 */
+body{background:radial-gradient(ellipse at 50% -10%,#58332d 0,#261b1a 35%,#100f10 82%);background-attachment:fixed}
+#screen{padding-top:10px}
+.week-summary{background:linear-gradient(115deg,#3a2422,#211a19 70%);position:relative;overflow:hidden}
+.week-summary:after{content:"";position:absolute;width:145px;height:145px;border:1px solid #c17a5733;border-radius:50%;right:-38px;top:-72px;box-shadow:0 0 0 15px #c17a5708,0 0 0 30px #c17a5706;pointer-events:none}
+.eyebrow{font-size:10px;letter-spacing:.17em;color:#d6a47d;font-weight:700;margin-bottom:5px}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title h2{margin:0}
+.section-mark{font-family:Georgia,serif;color:#c47d67;font-size:18px;opacity:.8}
+.schedule-card,.routines-card{background:linear-gradient(145deg,#292120,#181515);border-color:#61463d;box-shadow:0 12px 32px #0004,inset 0 1px #ffffff08}
+.routine-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 12px;margin:9px 0;border:1px solid #574139;border-radius:14px;background:linear-gradient(110deg,#302321,#211a19);box-shadow:0 5px 14px #0002}
+.routine-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+.routine-info b{font-size:15px;color:#f1e4d7}
+.routine-info span{font-size:12px;color:#bda99a}
+.routine-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.routine-actions .btn{padding:8px 10px;font-size:12px}
+.danger-icon{width:34px;height:34px;padding:0!important;border-radius:11px!important;background:#3b2020!important;border:1px solid #82413c!important;color:#f0a39a!important;font-size:21px!important}
+.btn.danger{background:linear-gradient(120deg,#a33b35,#642321);border-color:#bd655b}
+.copy-week{margin-top:9px}
+.day{background:linear-gradient(160deg,#29201f,#1b1717);border:1px solid #554039;border-radius:13px;padding:10px;box-shadow:inset 0 1px #ffffff08}
+.day>b{color:#e6c6a8}
+.mini{border-radius:7px;background:#49302b;padding:5px 6px;margin:5px 0;color:#f0d9c7;font-size:11px}
+.item{background:linear-gradient(120deg,#2e2220,#1b1717);border-color:#5b4038}
+.card{box-shadow:0 10px 26px #0003,inset 0 1px #ffffff08}
+.btn{transition:transform .15s ease,filter .15s ease}
+.btn:active{transform:scale(.97);filter:brightness(1.15)}
+.btn.primary{box-shadow:0 5px 16px #8d332c44}
+@media(max-width:520px){.routine-row{align-items:flex-start}.routine-actions{gap:5px}.routine-actions .btn{padding:8px}.day{padding:7px}}
 </style></head><body><div class="app"><header><div class="brand"><span class="mark">⛩</span><span>Путь самурая</span></div><span class="small" id="date"></span></header><main id="screen"></main></div><div class="nav"><div class="navin"><button data-p="notes"> <b>▤</b>Заметки</button><button data-p="week"><b>▦</b>Неделя</button><button data-p="today" class="active"><b>◉</b>Сегодня</button><button data-p="character"><b>侍</b>Персонаж</button><button data-p="more"><b>⋯</b>Разное</button></div></div><div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <script>
 const $=s=>document.querySelector(s),id=()=>Math.random().toString(36).slice(2),iso=()=>new Date().toLocaleDateString('en-CA'),add=(d,n)=>{let x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toLocaleDateString('en-CA')},ws=d=>add(d,-((new Date(d+'T12:00:00').getDay()+6)%7)),fmt=d=>new Date(d+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short'}),esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -38,7 +67,9 @@ function today(){let a=tasks(iso());$('#screen').innerHTML=`<h1>Сегодня</
 function check(i,v){let t=D.tasks.find(x=>x.id===i);if(v&&t.status!=='done'&&!t.xp){xp(20);t.xp=true;t.status='done'}else if(!v&&t.xp){xp(-20);t.xp=false;t.status='pending'}save();today()}
 function taskMenu(i){modal(`<h2>Статус задачи</h2><button class="btn" onclick="status('${i}','cancel')">Отменить по обстоятельствам</button> <button class="btn ghost" onclick="status('${i}','pending')">Вернуть в ожидание</button>`)}
 function status(i,s){let t=D.tasks.find(x=>x.id===i);if(t.xp&&s!=='done'){xp(-20);t.xp=false}t.status=s;save();close();today()}
-function week(){let ds=Array.from({length:7},(_,i)=>add(D.week,i));$('#screen').innerHTML=`<h1>Неделя</h1><div class="card"><div class="row"><div><h2>${fmt(ds[0])} — ${fmt(ds[6])}</h2><div class="small">${D.locked?'План закреплён':'План редактируется'}</div></div><button class="btn ${D.locked?'ghost':'primary'}" onclick="D.locked=!D.locked;save();week()">${D.locked?'🔒 Изменить':'Закрепить'}</button></div></div><div class="card"><h2>Расписание</h2><div class="week">${ds.map(d=>`<div class="day"><b>${['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][new Date(d+'T12:00:00').getDay()]} ${d.slice(8)}</b>${tasks(d).map(t=>`<div class="mini">${esc(t.title)} ${t.status==='done'?'✓':t.status==='cancel'?'○':''}</div>`).join('')}<button class="btn ghost" ${D.locked?'disabled':''} onclick="oneOff('${d}')">＋</button></div>`).join('')}</div></div><div class="card"><div class="row"><h2>Рутины</h2><button class="btn primary" ${D.locked?'disabled':''} onclick="routine()">＋ Создать</button></div>${D.routines.map(r=>`<div class="item"><b>${esc(r.title)}</b> · ${r.count} раз/нед. <button class="btn ghost" onclick="distribute('${r.id}')" ${D.locked?'disabled':''}>Распределить</button></div>`).join('')||'<div class="empty">Создай повторяющиеся задачи, затем распредели их по дням.</div>'}<button class="btn ghost" onclick="copyWeek()" ${D.locked?'disabled':''}>Копировать предыдущую неделю</button></div>`}
+function week(){let ds=Array.from({length:7},(_,i)=>add(D.week,i));$('#screen').innerHTML=`<h1>Неделя</h1><div class="card week-summary"><div class="row"><div><div class="eyebrow">ТВОЙ ПЛАН</div><h2>${fmt(ds[0])} — ${fmt(ds[6])}</h2><div class="small">${D.locked?'План закреплён':'План редактируется'}</div></div><button class="btn ${D.locked?'ghost':'primary'}" onclick="D.locked=!D.locked;save();week()">${D.locked?'🔒 Изменить':'Закрепить'}</button></div></div><div class="card schedule-card"><div class="section-title"><h2>Расписание</h2><span class="section-mark">七日</span></div><div class="week">${ds.map(d=>`<div class="day"><b>${['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][new Date(d+'T12:00:00').getDay()]} ${d.slice(8)}</b>${tasks(d).map(t=>`<div class="mini">${esc(t.title)} ${t.status==='done'?'✓':t.status==='cancel'?'○':''}</div>`).join('')}<button class="btn ghost" ${D.locked?'disabled':''} onclick="oneOff('${d}')">＋</button></div>`).join('')}</div></div><div class="card routines-card"><div class="section-title"><div><div class="eyebrow">ПОВТОРЯЮЩИЕСЯ ДЕЛА</div><h2>Рутины</h2></div><button class="btn primary" ${D.locked?'disabled':''} onclick="routine()">＋ Создать</button></div>${D.routines.map(r=>`<div class="routine-row"><div class="routine-info"><b>${esc(r.title)}</b><span>${r.count} ${r.count===1?'раз':'раза'} в неделю</span></div><div class="routine-actions"><button class="btn ghost" onclick="distribute('${r.id}')" ${D.locked?'disabled':''}>Распределить</button><button class="btn danger-icon" title="Удалить рутину" aria-label="Удалить рутину" onclick="deleteRoutine('${r.id}')" ${D.locked?'disabled':''}>×</button></div></div>`).join('')||'<div class="empty">Здесь будут твои повторяющиеся задачи.</div>'}<button class="btn ghost copy-week" onclick="copyWeek()" ${D.locked?'disabled':''}>Копировать предыдущую неделю</button></div>`}
+function deleteRoutine(i){const r=D.routines.find(x=>x.id===i);if(!r)return;modal(`<div class="modal-head"><div><div class="eyebrow">УПРАВЛЕНИЕ РУТИНАМИ</div><h2>Удалить рутину?</h2><p class="muted">«${esc(r.title)}» будет удалена из списка повторяющихся задач. Уже добавленные в расписание задачи останутся.</p></div><button class="close-btn" onclick="close()">×</button></div><div class="row"><button class="btn ghost" onclick="close()">Оставить</button><button class="btn danger" onclick="confirmDeleteRoutine('${i}')">Удалить</button></div>`)}
+function confirmDeleteRoutine(i){D.routines=D.routines.filter(x=>x.id!==i);save();close();week()}
 function routine(){modal(`<h2>Новая рутина</h2><label>Название</label><input id="rt" placeholder="Например, тренировка"><label>Повторений в неделю</label><input id="rc" type="number" min="1" max="7" value="3"><button class="btn primary" onclick="saveRoutineFromModal()">Создать</button>`)}
 function saveRoutineFromModal(){const title=document.getElementById("rt").value.trim();const count=Math.max(1,Math.min(7,Number(document.getElementById("rc").value)||1));if(!title){alert("Введи название задачи");return;}D.routines.push({id:id(),title,count});save();close();week();}
 function distribute(i){
